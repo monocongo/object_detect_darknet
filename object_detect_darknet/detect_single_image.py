@@ -3,6 +3,9 @@ import os
 
 import cv2
 
+# non-maximum suppression threshold
+_NMS_THRESHOLD = 0.3
+
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
 
@@ -25,6 +28,18 @@ if __name__ == '__main__':
         required=True,
         type=str,
         help="Path to Darknet model configuration file",
+    )
+    args_parser.add_argument(
+        "--labels",
+        required=True,
+        type=str,
+        help="Path to file specifying the labels used for Darknet model training",
+    )
+    args_parser.add_argument(
+        "--confidence",
+        type=float,
+        default=0.5,
+        help="Minimum probability required for detections",
     )
     args = vars(args_parser.parse_args())
 
