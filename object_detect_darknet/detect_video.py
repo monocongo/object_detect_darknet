@@ -4,7 +4,7 @@ displayed including detection bounding boxes.
 
 Example usage:
 
-$ python3 detect_video.py --video_url rtsp://123.45.67.89:1234 \
+$ python3 detect_video.py --video_url rtsp://username:passwd@71.85.154.125/unicast/c2/s1 \
     --weights /home/james/darknet/20191004/yolov3-tiny-weapons-416_final.weights \
     --config /home/james/darknet/20191004/yolov3-tiny-weapons-416.cfg \
     --labels /home/james/darknet/20191004/labels.txt \
@@ -78,7 +78,7 @@ if __name__ == '__main__':
     cv2.waitKey(1) & 0xFF
 
     # get the initial frame, in order to have a baseline image for motion detection
-    previous_frame = video_stream.read()
+    (grabbed, previous_frame) = video_stream.read()
 
     # loop over each image frame in the video stream
     while True:
@@ -93,6 +93,9 @@ if __name__ == '__main__':
         # only perform detection if we've read a significantly different frame
         difference = np.sum(np.absolute(frame - previous_frame)) / np.size(frame)
         if difference > _DIFFERENCE_THRESHOLD:
+
+            # update the previous frame for the next iteration
+            previous_frame = frame
 
             # perform object detection on the image, get the image annotated with bounding boxes
             frame = detect_objects(frame, darknet, labels, label_colors, args["confidence"], layer_names)
