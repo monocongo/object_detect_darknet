@@ -12,14 +12,14 @@ $ python3 detect_video.py --video_url rtsp://123.45.67.89:1234 \
 """
 
 import argparse
-import os
+import time
 
 import cv2
 import numpy as np
 
 from object_detect_darknet.detect import detect_objects
-from object_detect_darknet.utils import resize_image
 
+_DIFFERENCE_THRESHOLD = 15.0
 
 # ------------------------------------------------------------------------------
 if __name__ == '__main__':
@@ -71,9 +71,14 @@ if __name__ == '__main__':
     np.random.seed(42)
     label_colors = np.random.randint(0, 255, size=(len(labels), 3), dtype="uint8")
 
-    # initialize the video stream, pointer to output video file, and
-    # frame dimensions
+    # initialize the video stream, wait a few seconds to allow
+    # the camera sensor to warm up
     video_stream = cv2.VideoCapture(args["video_url"])
+    time.sleep(2.0)
+    cv2.waitKey(1) & 0xFF
+
+    # get the initial frame, in order to have a baseline image for motion detection
+    previous_frame = video_stream.read()
 
     # loop over each image frame in the video stream
     while True:
@@ -85,12 +90,20 @@ if __name__ == '__main__':
         if not grabbed:
             break
 
-        # perform object detection on the image, get the image annotated with bounding boxes
-        image = detect_objects(frame, darknet, labels, label_colors, args["confidence"], layer_names)
+        # only perform detection if we've read a significantly different frame
+        difference = np.sum(np.absolute(frame - previous_frame)) / np.size(frame)
+        if difference > _DIFFERENCE_THRESHOLD:
 
-        # show the output image
-        cv2.imshow("Image", image)
-        cv2.waitKey(0)
+            # perform object detection on the image, get the image annotated with bounding boxes
+            frame = detect_objects(frame, darknet, labels, label_colors, args["confidence"], layer_names)
+
+        # display the frame
+        cv2.imshow("Frame", frame)
+        key = cv2.waitKey(1) & 0xFF
+
+        # if the `q` key was pressed, break from the loop
+        if key == ord("q"):
+            break
 
     # successful completion
     exit(0)
