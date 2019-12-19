@@ -191,7 +191,7 @@ $ python3 detect_video.py --video_url rtsp://username:password@71.85.124.145/uni
 Perform object detection on all image files in a directory and write the detections 
 as Darknet format annotation files:
 ```bash
-$ python3 detect_image.py --images_dir /data/datasets/weapons/images \
+$ python3 annotate_image.py --images_dir /data/datasets/weapons/images \
     --annotations_dir /data/datasets/weapons/darknet
     --weights /home/james/darknet/yolov3-tiny-416.weights \
     --config /home/james/darknet/yolov3-tiny-416.cfg \
