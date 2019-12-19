@@ -9,6 +9,12 @@ import numpy as np
 def find_input_resolution(
         config_path: str,
 ) -> Tuple:
+    """
+    Read a Darknet configuration file and extract the network's input resolution.
+
+    :param config_path: absolute path to a Darknet configuration file
+    :return: (width, height) tuple
+    """
 
     # read the configuration file to find the network's input width and height
     config_parser = configparser.ConfigParser(strict=False)
