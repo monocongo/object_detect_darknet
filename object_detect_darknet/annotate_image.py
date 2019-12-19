@@ -19,6 +19,7 @@ import shutil
 import cv2
 
 from object_detect_darknet.detect import bounding_boxes
+from object_detect_darknet.utils import find_input_resolution
 
 
 # ------------------------------------------------------------------------------
@@ -68,6 +69,9 @@ if __name__ == '__main__':
     # load the model from weights/configuration
     darknet = cv2.dnn.readNetFromDarknet(args["config"], args["weights"])
 
+    # read the configuration file to find the network's input width and height
+    model_input_resolution = find_input_resolution(args["config"])
+
     # loop over each image file in the specified images directory
     image_file_names = os.listdir(args["images_dir"])
     for image_file_name in image_file_names:
@@ -79,9 +83,6 @@ if __name__ == '__main__':
         # read the image data
         image_file_path = os.path.join(args["images_dir"], image_file_name)
         image = cv2.imread(image_file_path)
-
-        # TODO read the model configuration to get the expected image resolution
-        model_input_resolution = (416, 416)
 
         boxes = bounding_boxes(image, darknet, args["confidence"], model_input_resolution)
         if len(boxes) > 0:

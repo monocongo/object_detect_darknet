@@ -18,7 +18,7 @@ import cv2
 import numpy as np
 
 from object_detect_darknet.detect import annotate
-from object_detect_darknet.utils import resize_image
+from object_detect_darknet.utils import resize_image, find_input_resolution
 
 
 # ------------------------------------------------------------------------------
@@ -61,10 +61,6 @@ if __name__ == '__main__':
     # load the model from weights/configuration
     darknet = cv2.dnn.readNetFromDarknet(args["config"], args["weights"])
 
-    # get the output layer names
-    layer_names = darknet.getLayerNames()
-    layer_names = [layer_names[i[0] - 1] for i in darknet.getUnconnectedOutLayers()]
-
     # read labels into a list, get colors to represent each
     labels = open(args["labels"]).read().strip().split("\n")
     np.random.seed(42)
@@ -78,8 +74,8 @@ if __name__ == '__main__':
         image_file_path = os.path.join(args["images_dir"], image_file_name)
         image = cv2.imread(image_file_path)
 
-        # TODO read the model configuration to get the expected image resolution
-        model_input_resolution = (416, 416)
+        # read the configuration file to find the network's input width and height
+        model_input_resolution = find_input_resolution(args["config"])
 
         # perform object detection on the image, update the image with bounding boxes
         image = annotate(image, darknet, labels, label_colors, args["confidence"], model_input_resolution)
