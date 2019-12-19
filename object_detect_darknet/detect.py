@@ -66,8 +66,8 @@ def box_darknet_to_kitti(
     height = darknet_box.height * img_height
     xmin = int((darknet_box.center_x - (darknet_box.width / 2)) * img_width)
     ymin = int((darknet_box.center_y - (darknet_box.height / 2)) * img_height)
-    xmax = xmin + width
-    ymax = ymin + height
+    xmax = int(xmin + width)
+    ymax = int(ymin + height)
 
     return KittiBoundingBox(
         class_labels[darknet_box.class_id],
@@ -102,7 +102,6 @@ def bounding_boxes(
     layer_names = [layer_names[i[0] - 1] for i in darknet.getUnconnectedOutLayers()]
 
     # read image into BLOB
-    (height, width) = image.shape[:2]
     blob = cv2.dnn.blobFromImage(
         image,
         1 / 255.0,
@@ -124,29 +123,16 @@ def bounding_boxes(
             # extract the class ID and confidence
             # of the current object detection
             scores = detection[5:]
-            class_id = np.argmax(scores)
+            class_id = int(np.argmax(scores))
             confidence = scores[class_id]
 
             # filter out weak predictions by ensuring the detected
             # probability is greater than the minimum probability
             if confidence > confidence_threshold:
 
-                # # scale the bounding box coordinates back relative to the
-                # # size of the image, keeping in mind that YOLO actually
-                # # returns the center (x, y)-coordinates of the bounding
-                # # box followed by the boxes' width and height
-                # box = detection[0:4] * np.array([width, height, width, height])
-                # (center_x, center_y, box_width, box_height) = box.astype("int")
-                #
-                # # use the center (x, y)-coordinates to derive the top and
-                # # and left corner of the bounding box
-                # x = int(center_x - (box_width / 2))
-                # y = int(center_y - (box_height / 2))
-
                 # update our list of bounding box coordinates,
                 # confidences, and class IDs
                 boxes.append(detection[0:4])
-                # boxes.append([x, y, int(box_width), int(box_height)])
                 confidences.append(float(confidence))
                 class_ids.append(class_id)
 
@@ -196,88 +182,19 @@ def annotate(
     :return:
     """
 
-    # # read image into BLOB (assuming model resolution is 416x416)
-    # (height, width) = image.shape[:2]
-    # blob = cv2.dnn.blobFromImage(
-    #     image,
-    #     1 / 255.0,
-    #     (416, 416),
-    #     swapRB=True,
-    #     crop=False,
-    # )
-    #
-    # # pass the BLOB through the model to get detections
-    # darknet.setInput(blob)
-    # layer_outputs = darknet.forward(layer_names)
-    #
-    # # get the detection details
-    # boxes = []
-    # confidences = []
-    # class_ids = []
-    # for output in layer_outputs:
-    #     for detection in output:
-    #         # extract the class ID and confidence
-    #         # of the current object detection
-    #         scores = detection[5:]
-    #         class_id = np.argmax(scores)
-    #         confidence = scores[class_id]
-    #
-    #         # filter out weak predictions by ensuring the detected
-    #         # probability is greater than the minimum probability
-    #         if confidence > confidence_threshold:
-    #
-    #             # scale the bounding box coordinates back relative to the
-    #             # size of the image, keeping in mind that YOLO actually
-    #             # returns the center (x, y)-coordinates of the bounding
-    #             # box followed by the boxes' width and height
-    #             box = detection[0:4] * np.array([width, height, width, height])
-    #             (centerX, centerY, box_width, box_height) = box.astype("int")
-    #
-    #             # use the center (x, y)-coordinates to derive the top and
-    #             # and left corner of the bounding box
-    #             x = int(centerX - (box_width / 2))
-    #             y = int(centerY - (box_height / 2))
-    #
-    #             # update our list of bounding box coordinates,
-    #             # confidences, and class IDs
-    #             boxes.append([x, y, int(box_width), int(box_height)])
-    #             confidences.append(float(confidence))
-    #             class_ids.append(class_id)
-    #
-    # # apply non-maximum suppression to suppress weak, overlapping bounding boxes
-    # idxs = cv2.dnn.NMSBoxes(boxes, confidences, confidence_threshold, _NMS_THRESHOLD)
-    #
-    # # ensure at least one detection exists
-    # if len(idxs) > 0:
-    #
-    #     # loop over the indexes we are keeping
-    #     for i in idxs.flatten():
-    #         # extract the bounding box coordinates
-    #         (x, y) = (boxes[i][0], boxes[i][1])
-    #         (w, h) = (boxes[i][2], boxes[i][3])
-    #
-    #         # draw a bounding box rectangle and label on the image
-    #         color = [int(c) for c in class_label_colors[class_ids[i]]]
-    #         cv2.rectangle(image, (x, y), (x + w, y + h), color, 2)
-    #         text = f"{class_labels[class_ids[i]]}: {confidences[i]:.4f}"
-    #         cv2.putText(
-    #             image,
-    #             text,
-    #             (x, y - 5),
-    #             cv2.FONT_HERSHEY_SIMPLEX,
-    #             0.5,
-    #             color,
-    #             2,
-    #         )
-
     for bbox in bounding_boxes(
             image,
             darknet,
             confidence_threshold,
             model_input_resolution,
     ):
-        # convert to a KITTI box which contains converted X/Y values
-        kitti_box = box_darknet_to_kitti(bbox, class_labels, image.shape[1], image.shape[0])
+        # convert to a KITTI box which contains pixel X/Y values
+        kitti_box = box_darknet_to_kitti(
+            darknet_box=bbox,
+            class_labels=class_labels,
+            img_width=image.shape[1],
+            img_height=image.shape[0],
+        )
 
         # draw a bounding box rectangle and a label/confidence text on the image
         color = [int(c) for c in class_label_colors[bbox.class_id]]
