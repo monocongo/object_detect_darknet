@@ -17,7 +17,7 @@ import os
 import cv2
 import numpy as np
 
-from object_detect_darknet.detect import detect_objects
+from object_detect_darknet.detect import annotate
 from object_detect_darknet.utils import resize_image
 
 
@@ -78,8 +78,11 @@ if __name__ == '__main__':
         image_file_path = os.path.join(args["images_dir"], image_file_name)
         image = cv2.imread(image_file_path)
 
+        # TODO read the model configuration to get the expected image resolution
+        model_input_resolution = (416, 416)
+
         # perform object detection on the image, update the image with bounding boxes
-        image = detect_objects(image, darknet, labels, label_colors, args["confidence"], layer_names)
+        image = annotate(image, darknet, labels, label_colors, args["confidence"], model_input_resolution)
 
         # resize to fit on a screen (for handling especially large images)
         display_width = 800
