@@ -273,29 +273,29 @@ def annotate(
     for bbox in bounding_boxes(
             image,
             darknet,
-            class_labels,
             confidence_threshold,
             model_input_resolution,
     ):
         # convert to a KITTI box which contains converted X/Y values
-        kitti_box = box_darknet_to_kitti(bbox, class_labels)
+        kitti_box = box_darknet_to_kitti(bbox, class_labels, image.shape[1], image.shape[0])
 
-        # draw a bounding box rectangle and label on the image
+        # draw a bounding box rectangle and a label/confidence text on the image
         color = [int(c) for c in class_label_colors[bbox.class_id]]
-        cv2.rectangle(image,
-                      (kitti_box.xmin, kitti_box.ymin),
-                      (kitti_box.xmax, kitti_box.ymax),
-                      color,
-                      2)
-        text = f"{kitti_box.label}: {bbox.confidence:.2f}"
+        cv2.rectangle(
+            img=image,
+            pt1=(int(kitti_box.xmin), int(kitti_box.ymin)),
+            pt2=(int(kitti_box.xmax), int(kitti_box.ymax)),
+            color=color,
+            thickness=2,
+        )
         cv2.putText(
-            image,
-            text,
-            (kitti_box.xmin + 2, kitti_box.ymin + 5),
-            cv2.FONT_HERSHEY_SIMPLEX,
-            0.5,
-            color,
-            2,
+            img=image,
+            text=f"{kitti_box.label}: {bbox.confidence:.2f}",
+            org=(kitti_box.xmin + 2, kitti_box.ymin + 5),
+            fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+            fontScale=0.5,
+            color=color,
+            thickness=2,
         )
 
     return image
