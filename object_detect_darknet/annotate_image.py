@@ -1,10 +1,11 @@
 """
-Script to perform object detection on all images in a directory. Images will be
+Script to perform object detection on all images in a directory and write . Images will be
 displayed including detection bounding boxes.
 
 Example usage:
 
-$ python3 detect_image.py --images_dir /data/datasets/weapons/test \
+$ python3 annotate_image.py --images_dir /data/imgs/fedex \
+    --annotations_dir /data/imgs/fedex/darknet \
     --weights /home/james/darknet/20191004/yolov3-tiny-weapons-416_final.weights \
     --config /home/james/darknet/20191004/yolov3-tiny-weapons-416.cfg \
     --labels /home/james/darknet/20191004/labels.txt \
@@ -13,12 +14,12 @@ $ python3 detect_image.py --images_dir /data/datasets/weapons/test \
 
 import argparse
 import os
+import shutil
 
 import cv2
-import numpy as np
 
-from object_detect_darknet.detect import annotate
-from object_detect_darknet.utils import resize_image, find_input_resolution
+from object_detect_darknet.detect import bounding_boxes
+from object_detect_darknet.utils import find_input_resolution
 
 
 # ------------------------------------------------------------------------------
@@ -31,6 +32,12 @@ if __name__ == '__main__':
         required=True,
         type=str,
         help="Directory containing one or more images to be used as input",
+    )
+    args_parser.add_argument(
+        "--annotations_dir",
+        required=True,
+        type=str,
+        help="Directory where Darknet annotation files will be written",
     )
     args_parser.add_argument(
         "--weights",
@@ -48,7 +55,8 @@ if __name__ == '__main__':
         "--labels",
         required=True,
         type=str,
-        help="Path to file specifying the labels used for Darknet model training",
+        help="Path to file specifying the labels used for Darknet model "
+             "training, will be copied into the annotations directory",
     )
     args_parser.add_argument(
         "--confidence",
@@ -61,34 +69,35 @@ if __name__ == '__main__':
     # load the model from weights/configuration
     darknet = cv2.dnn.readNetFromDarknet(args["config"], args["weights"])
 
-    # read labels into a list, get colors to represent each
-    labels = open(args["labels"]).read().strip().split("\n")
-    np.random.seed(42)
-    label_colors = np.random.randint(0, 255, size=(len(labels), 3), dtype="uint8")
+    # read the configuration file to find the network's input width and height
+    model_input_resolution = find_input_resolution(args["config"])
 
     # loop over each image file in the specified images directory
     image_file_names = os.listdir(args["images_dir"])
     for image_file_name in image_file_names:
 
+        # skip non-image files, directories, etc.
+        if os.path.splitext(image_file_name)[1].lower() not in (".jpg", ".jpeg", ".png"):
+            continue
+
         # read the image data
         image_file_path = os.path.join(args["images_dir"], image_file_name)
         image = cv2.imread(image_file_path)
 
-        # read the configuration file to find the network's input width and height
-        model_input_resolution = find_input_resolution(args["config"])
+        boxes = bounding_boxes(image, darknet, args["confidence"], model_input_resolution)
+        if len(boxes) > 0:
+            file_id = os.path.splitext(image_file_name)[0]
+            darknet_file_path = os.path.join(args["annotations_dir"], file_id + ".txt")
+            with open(darknet_file_path, "w") as darknet_file:
+                for box in boxes:
+                    darknet_file.write(
+                        f"{box.class_id} {box.center_x:.4f} {box.center_y:.4f} "
+                        f"{box.width:.4f} {box.height:.4f}\n",
+                    )
 
-        # perform object detection on the image, update the image with bounding boxes
-        image = annotate(image, darknet, labels, label_colors, args["confidence"], model_input_resolution)
-
-        # resize to fit on a screen (for handling especially large images)
-        display_width = 800
-        display_height = 400
-        if (image.shape[0] > display_height) or (image.shape[1] > display_width):
-            image = resize_image(image, display_width, display_height)
-
-        # show the output image
-        cv2.imshow("Image", image)
-        cv2.waitKey(0)
+    # copy the labels file into the annotations directory so we'll
+    # have a way to cross-reference what each class ID represents
+    shutil.copy2(args["labels"], args["annotations_dir"])
 
     # successful completion
     exit(0)

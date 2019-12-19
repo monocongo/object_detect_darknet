@@ -1,5 +1,36 @@
+import configparser
+from typing import Tuple
+
 import cv2
 import numpy as np
+
+
+# ------------------------------------------------------------------------------
+def find_input_resolution(
+        config_path: str,
+) -> Tuple:
+    """
+    Read a Darknet configuration file and extract the network's input resolution.
+
+    :param config_path: absolute path to a Darknet configuration file
+    :return: (width, height) tuple
+    """
+
+    # read the configuration file to find the network's input width and height
+    config_parser = configparser.ConfigParser(strict=False)
+    model_input_width = 416  # reasonable default
+    model_input_height = 416  # reasonable default
+    config_parser.read(config_path)
+    section = "net"
+    if config_parser.has_section(section):
+        params = config_parser.items(section)
+        for param in params:
+            if param[0] == "width":
+                model_input_width = int(param[1])
+            elif param[0] == "height":
+                model_input_height = int(param[1])
+
+    return tuple(model_input_width, model_input_height)
 
 
 # ------------------------------------------------------------------------------

@@ -17,7 +17,7 @@ import time
 import cv2
 import numpy as np
 
-from object_detect_darknet.detect import detect_objects
+from object_detect_darknet.detect import annotate
 
 _DIFFERENCE_THRESHOLD = 15.0
 
@@ -98,7 +98,7 @@ if __name__ == '__main__':
             previous_frame = frame
 
             # perform object detection on the image, get the image annotated with bounding boxes
-            frame = detect_objects(frame, darknet, labels, label_colors, args["confidence"], layer_names)
+            frame = annotate(frame, darknet, labels, label_colors, args["confidence"], layer_names)
 
         # display the frame
         cv2.imshow("Frame", frame)
