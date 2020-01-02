@@ -144,11 +144,22 @@ directory `${DARKNET}/build/darknet/x64`.
     $ wget https://pjreddie.com/media/files/darknet53.conv.74
     ```
    
-7. Train the model on a single GPU:
+7. Train the model on a single GPU.
+    YOLOv3-tiny:
     ```bash
+    $ cd ${DARKNET}
     $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg yolov3-tiny.conv.15
     ```  
+    YOLOv3:
+    ```bash
+    $ cd ${DARKNET}
+    $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-obj.cfg darknet53.conv.74
+    ```  
 
+    In order to monitor the training we can add the following command line options 
+    to the training commands above: `-dont_show -mjpeg_port 8090 -map`
+    This will allow us to then point a browser to http://localhost:8090/ to monitor the progress.
+    
     As the model is training it will save the trained weights at every 1000 
     iterations into the `backup` directory specified in the file 
     `${DARKNET}/build/darknet/x64/data/obj.data`. For example after completion of 
@@ -173,9 +184,15 @@ directory `${DARKNET}/build/darknet/x64`.
     
     Assuming that we'll use 4 GPUs and the GPU IDs we'll want to use on our machine 
     are 0, 1, 2, and 3, then we'll restart the training by using the latest training 
-    weights file and specifying the GPU IDs with the `-gpus` option:
+    weights file and specifying the GPU IDs with the `-gpus` option.
+    
+    YOLOv3-tiny:
     ```bash
     $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg backup/yolov3-tiny-weapons-608_2000.weights -gpus 0,1,2,3
+    ``` 
+    YOLOv3:
+    ```bash
+    $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-obj.cfg backup/yolov-obj_2000.weights -gpus 0,1,2,3
     ``` 
 
 ## Utilize the trained model for object detection
