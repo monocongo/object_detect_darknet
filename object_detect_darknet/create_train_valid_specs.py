@@ -51,6 +51,7 @@ if __name__ == "__main__":
         # list the files in the training directory
         for file_name in os.listdir(args["train_dir"]):
 
+            # only use JPG files
             if file_name.endswith(".jpg"):
 
                 # write the relative path of the image to the train.txt file
@@ -60,9 +61,10 @@ if __name__ == "__main__":
     # write the valid.txt file
     with open(args["valid_file"], "w") as train_txt:
 
-        # list the files in the training directory
+        # list the files in the validation directory
         for file_name in os.listdir(args["valid_dir"]):
 
+            # only use JPG files
             if file_name.endswith(".jpg"):
 
                 # write the relative path of the image to the train.txt file
