@@ -11,6 +11,7 @@ if __name__ == "__main__":
           --valid_dir /home/ubuntu/datasets/weapons/images/val
           --train_file /home/ubuntu/git/darknet/build/darknet/x64/data/train.txt \
           --valid_file /home/ubuntu/git/darknet/build/darknet/x64/data/valid.txt \
+          --dest_dir /home/ubuntu/git/darknet/build/darknet/x64/data/obj
     """
 
     # parse the command line arguments
@@ -28,6 +29,14 @@ if __name__ == "__main__":
         type=str,
         help="path to directory containing the validation dataset of image files "
              "(*.jpg) and corresponding annotation files (*.txt)",
+    )
+    args_parser.add_argument(
+        "--dest_dir",
+        required=True,
+        type=str,
+        help="path to directory that will containing both the training "
+             "and validation dataset of image files (*.jpg) and "
+             "corresponding annotation files (*.txt)",
     )
     args_parser.add_argument(
         "--train_file",
@@ -55,7 +64,7 @@ if __name__ == "__main__":
             if file_name.endswith(".jpg"):
 
                 # write the relative path of the image to the train.txt file
-                file_path = os.path.join(args["train_dir"], file_name)
+                file_path = os.path.join(args["dest_dir"], file_name)
                 train_txt.write(file_path + "\n")
 
     # write the valid.txt file
@@ -68,5 +77,5 @@ if __name__ == "__main__":
             if file_name.endswith(".jpg"):
 
                 # write the relative path of the image to the train.txt file
-                file_path = os.path.join(args["valid_dir"], file_name)
+                file_path = os.path.join(args["dest_dir"], file_name)
                 train_txt.write(file_path + "\n")
