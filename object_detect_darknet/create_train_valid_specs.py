@@ -40,16 +40,14 @@ if __name__ == "__main__":
     )
     args_parser.add_argument(
         "--train_file",
-        required=False,
+        required=True,
         type=str,
-        default="train.txt",
         help="path to the (output) training dataset specification file",
     )
     args_parser.add_argument(
         "--valid_file",
-        required=False,
+        required=True,
         type=str,
-        default="valid.txt",
         help="path to the (output) validation dataset specification file",
     )
     args = vars(args_parser.parse_args())
