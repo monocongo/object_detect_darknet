@@ -67,7 +67,7 @@ in the configuration file used for the model being trained.
 2. Split the dataset into training and validation subsets. A reasonable example 
 split could be 80% for training and 20% for validation.
 3. Create `train.txt` and `valid.txt` files that list the paths to the training 
-and validation images. A [utility script](https://github.com/monocongo/object_detect_darknet/object_detect_darknet/build_train_valid_specs.py) 
+and validation images. A [utility script](https://github.com/monocongo/object_detect_darknet/object_detect_darknet/create_train_valid_specs.py) 
 for this exists in this repository.
 
 ## Model training configuration
