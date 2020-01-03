@@ -65,10 +65,21 @@ Once the dataset is available we will perform the following processing steps:
 required for training input. This should match to the width and height values used 
 in the configuration file used for the model being trained.
 2. Split the dataset into training and validation subsets. A reasonable example 
-split could be 80% for training and 20% for validation.
+split could be 80% for training and 20% for validation. The training and validation 
+subsets should be in separate directories in order to facilitate the creation of 
+the required image list files in the next step.
 3. Create `train.txt` and `valid.txt` files that list the paths to the training 
 and validation images. A [utility script](https://github.com/monocongo/object_detect_darknet/object_detect_darknet/create_train_valid_specs.py) 
-for this exists in this repository.
+for this exists in this repository. For example:
+```bash
+$ python create_train_valid_specs.py --train_dir /data/split_darknet_train \
+    --valid_dir /data/split_darknet_valid \
+    --dest_dir ${DARKNET}/build/darknet/x64/data/obj \
+    --train_file ${DARKNET}/build/darknet/x64/data/train.txt \
+    --valid_file ${DARKNET}/build/darknet/x64/data/valid.txt \
+```
+4. Copy all image and annotation files from the training and validation 
+subdirectories into `${DARKNET}/build/darknet/x64/data/obj`
 
 ## Model training configuration
 1. Create a new `*.cfg` file by copying the configuration file for the model we'll 
