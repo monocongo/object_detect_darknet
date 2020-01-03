@@ -144,47 +144,63 @@ directory `${DARKNET}/build/darknet/x64`.
     $ wget https://pjreddie.com/media/files/darknet53.conv.74
     ```
    
-7. Train the model on a single GPU.
-    YOLOv3-tiny:
-    ```bash
-    $ cd ${DARKNET}
-    $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg yolov3-tiny.conv.15
-    ```  
-    YOLOv3:
-    ```bash
-    $ cd ${DARKNET}
-    $ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-obj.cfg darknet53.conv.74
-    ```  
+## Training (transfer learning)
+Train the model on a single GPU.
 
-    In order to monitor the training we can add the following command line options 
-    to the training commands above: `-dont_show -mjpeg_port 8090 -map`
-    This will allow us to then point a browser to http://localhost:8090/ to monitor the progress.
-    
-    As the model is training it will save the trained weights at every 1000 
-    iterations into the `backup` directory specified in the file 
-    `${DARKNET}/build/darknet/x64/data/obj.data`. For example after completion of 
-    2000 batches:
-    ```bash
-    $ ls -l ${DARKNET}/backup
-    -rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 22:09 yolov3-tiny-weapons-608_1000.weights
-    -rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_2000.weights
-    -rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_final.weights
-    -rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_last.weights
-    ```
-    _Multi-GPU_ (optional):
-    
-    If multiple GPUs are available then we can stop the training (after at least 
-    1000 iterations) and restart using the latest weights and specifying 
-    multiple GPU IDs so as to parallelize the training over multiple (up to 4) GPUs.
-    
-    The configuration file will need to modified to adjust the learning rate setting 
-    to be equal to `0.001 / <number_of_gpus>`. For example, if using 4 GPUs then we'll 
-    adjust the value in `${DARKNET}/build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg`
-    to `learning_rate=0.00025`.
-    
-    Assuming that we'll use 4 GPUs and the GPU IDs we'll want to use on our machine 
-    are 0, 1, 2, and 3, then we'll restart the training by using the latest training 
-    weights file and specifying the GPU IDs with the `-gpus` option.
+###### YOLOv3-tiny:
+```bash
+$ cd ${DARKNET}
+$ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg yolov3-tiny.conv.15
+```  
+
+###### YOLOv3:
+```bash
+$ cd ${DARKNET}
+$ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-obj.cfg darknet53.conv.74
+```  
+
+In order to monitor the training we can add the following command line options 
+to the training commands above: `-dont_show -mjpeg_port 8090 -map`
+This will allow us to then point a browser to http://localhost:8090/ to monitor the progress.
+
+As the model is training it will save the trained weights at every 1000 
+iterations into the `backup` directory specified in the file 
+`${DARKNET}/build/darknet/x64/data/obj.data`. For example, after completion of 
+2000 batches:
+```bash
+$ ls -l ${DARKNET}/backup
+-rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 22:09 yolov3-tiny-weapons-608_1000.weights
+-rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_2000.weights
+-rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_final.weights
+-rw-rw-r--  1 ubuntu ubuntu 34714236 Sep 18 23:13 yolov3-tiny-weapons-608_last.weights
+```
+_Resume Training_:
+
+If the training is stopped and we want to resume training using the same dataset 
+and model configuration then we can restart using the same command used initially 
+but with the latest saved weights file as the final argument instead of the pre-trained 
+weights file we used in the initial train command. For example, if the YOLOv3 
+training is stopped after 2000 iterations and we want to resume then we'd use the 
+following training command:
+```bash
+$ cd ${DARKNET}
+$ ./darknet detector train build/darknet/x64/data/obj.data cfg/yolov3-obj.cfg backup/yolov3-obj_2000.weights
+```  
+
+_Multi-GPU_ (optional):
+
+If multiple GPUs are available then we can stop the training (after at least 
+1000 iterations) and restart using the latest weights and specifying 
+multiple GPU IDs so as to parallelize the training over multiple (up to 4) GPUs.
+
+The configuration file will need to modified to adjust the learning rate setting 
+to be equal to `0.001 / <number_of_gpus>`. For example, if using 4 GPUs then we'll 
+adjust the value in `${DARKNET}/build/darknet/x64/data/obj.data cfg/yolov3-tiny-weapons-608.cfg`
+to `learning_rate=0.00025`.
+
+Assuming that we'll use 4 GPUs and the GPU IDs we'll want to use on our machine 
+are 0, 1, 2, and 3, then we'll restart the training by using the latest training 
+weights file and specifying the GPU IDs with the `-gpus` option.
     
     YOLOv3-tiny:
     ```bash
